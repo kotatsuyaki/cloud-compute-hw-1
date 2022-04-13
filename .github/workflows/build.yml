@@ -1,0 +1,14 @@
+on:
+  - push
+name: Build document
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: cachix/install-nix-action@v15
+      - run: nix build .#
+      - uses: actions/upload-artifact@v3
+        with:
+          name: PDF
+          path: result/main.pdf
