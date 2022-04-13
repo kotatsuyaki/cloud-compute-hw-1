@@ -8,6 +8,8 @@ jobs:
       - uses: actions/checkout@v2
       - uses: cachix/install-nix-action@v15
       - run: nix build .#
+      - run: ls -la
+      - run: ls -la result/
       - uses: actions/upload-artifact@v3
         with:
           name: PDF
