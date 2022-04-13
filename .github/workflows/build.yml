@@ -13,3 +13,17 @@ jobs:
         with:
           name: PDF
           path: ${{ env.RESULT }}/*.pdf
+  pages:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/download-artifact@v3
+        id: download
+        with:
+          name: PDF
+      - run: echo '<!DOCTYPE html><html>PDF Directory</html>' >> ${{ steps.download.outputs.download-path }}/index.html
+      - uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ steps.download.outputs.download-path }}
