@@ -1,19 +1,14 @@
 ---
-# vim: set ft=pandoc:
+# vim: set ft=markdown.pandoc:
 title: Virtual Machine Live Migration
 subtitle: Cloud Computing Homework 1
-date: 2022-04-13
 author: 107021129 黃明瀧
-header-includes: |
-  \usepackage{xeCJK}
-  \setCJKmainfont{Source Han Serif}
+date: 2022-04-14
+
+maketitle: true
 ---
 
-# Virtual Machine Live Migration
-
-107021129 黃明瀧
-
-## A. VM Setup Description
+# A. VM Setup Description
 
 The experiments throughout this document were all done in a custom environment on my local machine.
 There are two "hosts"[^1], analogous to host 1 and host 2 mentioned in the tutorial slides,
@@ -61,7 +56,7 @@ The following steps were taken to setup the environment and the VM.
     Run `rc-service networking restart` to reload.
 
 4. Launch QEMU to perform VM installation.
-    Here we use `-curses` to show the TTY in a curses-based interface inside the terminal.
+    Here the `-curses` option is used to show the TTY in a curses-based interface inside the terminal.
     This avoids the headaches of doing VNC and X11 forwarding[^2].
 
     ```sh
@@ -75,11 +70,11 @@ The following steps were taken to setup the environment and the VM.
 
     Installation is straightforward:
 
-    a. Login on TTY as `root`.
-    b. Run `setup-alpine`.
-    c. Accept the default settings all the way down.  Set root password.
-    d. Select `vda` as the target with the `sys` disk mode.
-    e. Reboot.
+    1. Login on TTY as `root`.
+    2. Run `setup-alpine`.
+    3. Accept the default settings all the way down.  Set root password.
+    4. Select `vda` as the target with the `sys` disk mode.
+    5. Reboot.
 
     Additionally, change `/etc/ssh/sshd_config` to allow root login.
 
@@ -87,21 +82,67 @@ The following steps were taken to setup the environment and the VM.
 
 [^2]: My machine is on Wayland, which complicates X11 forwarding even more.
 
-## B. CPU Performance With and Without KVM Enabled
+# B. CPU Performance with and without KVM Enabled
 
 As background information, the data is obtained on a laptop running NixOS with a R7-4750U processor.
-Sysbench are ran for 10 seconds on all configurations.
+Sysbench are ran for 10 seconds (with the default options) on all configurations.
 
 - On guest **with** KVM enabled: 18678 events
 - On guest **without** KVM enabled: 3621 events
-- On host: 12378 events
-
----
-# TODO: Re-run the host benchmark with power plugged in
----
+- On host: 18651 events
 
 The guest VM runs over 5 times slower with KVM disabled.
 This is caused by the fact that without KVM,
 the QEMU process has no access to the virtulization features provided by the kernel module,
 and thus having to rely on emulation by software.
 In contrast, the guest with KVM enabled performs almost identical to the host machine.
+
+# C. Network Performance with and without Virtio
+
+The `iperf` server instance is hosted on the actual host (and not on the LXC containers).
+
+The result with virtio:
+
+```
+[  5]   0.00-10.00  sec  19.0 GBytes  16.3 Gbits/sec    0             sender
+[  5]   0.00-10.00  sec  19.0 GBytes  16.3 Gbits/sec                  receiver
+```
+
+The result without virtio:
+
+```
+[  5]   0.00-10.01  sec   970 MBytes   813 Mbits/sec    0             sender
+[  5]   0.00-10.01  sec   970 MBytes   813 Mbits/sec                  receiver
+```
+
+From the figures, we can see that the network throughput with virtio is over 20 times faster than the other setup.
+
+QEMU defaults to emulating the `e1000` network device for the guest,
+which uses the *full virtualization* technique.
+In contrast, the Virtio device uses the *para-virtualization* technique,
+which requires the guest to be aware that it's a VM and to use that virtio drivers to talk to the host.
+The para-virtualized drivers are designed to reduce the number of switches between the VM and the VMM,
+thus achieving much better performance.
+
+---
+
+Out of curiosity, I also tested the network performance with the `-R` (reverse) option,
+where the server sends and the client receives.
+
+The reversed result with virtio:
+
+```
+[  5]   0.00-10.00  sec  21.1 GBytes  18.2 Gbits/sec    0             sender
+[  5]   0.00-10.00  sec  21.1 GBytes  18.2 Gbits/sec                  receiver
+```
+
+The reversed result without virtio:
+
+```
+[  5]   0.00-10.00  sec  2.95 GBytes  2.53 Gbits/sec    0             sender
+[  5]   0.00-10.00  sec  2.94 GBytes  2.53 Gbits/sec                  receiver
+```
+
+The interesting part is that the reversed result of e1000 significantly higher than the normal one.
+As of the time of writing, I still have not found any satisfying explanation of this phenomenon.
+
