@@ -79,6 +79,8 @@ $for(classoption)$
 $endfor$
   ,captions=tableheading
 ]{$if(beamer)$$documentclass$$else$$if(book)$scrbook$else$scrartcl$endif$$endif$}
+\usepackage{xeCJK}
+\setCJKmainfont{Source Han Serif}
 $if(beamer)$
 $if(background-image)$
 \usebackgroundtemplate{%
@@ -956,13 +958,10 @@ $endif$
 \restoregeometry
 $else$
 $if(maketitle)$
-\vspace*{-3\baselineskip}
-\begin{center}
-    {\LARGE \thetitle}\\
-    \vspace{0.7\baselineskip}
-    {\large \theauthor}
-\end{center}
-\thispagestyle{plain}
+\vspace*{-1\baselineskip}
+{\LARGE \textbf{\thetitle}}\hfill{\large \theauthor}\\[0.5\baselineskip]
+{\color{gray}\Large $subtitle$}
+\vspace{-0.5\baselineskip}
 $endif$
 $endif$
 $endif$
