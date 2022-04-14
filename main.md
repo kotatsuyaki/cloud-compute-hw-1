@@ -104,15 +104,15 @@ The `iperf` server instance is hosted on the actual host (and not on the LXC con
 The result with virtio:
 
 ```
-[  5]   0.00-10.00  sec  19.0 GBytes  16.3 Gbits/sec    0             sender
-[  5]   0.00-10.00  sec  19.0 GBytes  16.3 Gbits/sec                  receiver
+[  5] 0.00-10.00 sec 19.0 GBytes 16.3 Gbits/sec 0 sender
+[  5] 0.00-10.00 sec 19.0 GBytes 16.3 Gbits/sec   receiver
 ```
 
 The result without virtio:
 
 ```
-[  5]   0.00-10.01  sec   970 MBytes   813 Mbits/sec    0             sender
-[  5]   0.00-10.01  sec   970 MBytes   813 Mbits/sec                  receiver
+[  5] 0.00-10.01 sec 970 MBytes 813 Mbits/sec 0 sender
+[  5] 0.00-10.01 sec 970 MBytes 813 Mbits/sec   receiver
 ```
 
 From the figures, we can see that the network throughput with virtio is over 20 times faster than the other setup.
@@ -132,17 +132,55 @@ where the server sends and the client receives.
 The reversed result with virtio:
 
 ```
-[  5]   0.00-10.00  sec  21.1 GBytes  18.2 Gbits/sec    0             sender
-[  5]   0.00-10.00  sec  21.1 GBytes  18.2 Gbits/sec                  receiver
+[  5] 0.00-10.00 sec 21.1 GBytes 18.2 Gbits/sec 0 sender
+[  5] 0.00-10.00 sec 21.1 GBytes 18.2 Gbits/sec   receiver
 ```
 
 The reversed result without virtio:
 
 ```
-[  5]   0.00-10.00  sec  2.95 GBytes  2.53 Gbits/sec    0             sender
-[  5]   0.00-10.00  sec  2.94 GBytes  2.53 Gbits/sec                  receiver
+[  5] 0.00-10.00 sec 2.95 GBytes 2.53 Gbits/sec 0 sender
+[  5] 0.00-10.00 sec 2.94 GBytes 2.53 Gbits/sec   receiver
 ```
 
 The interesting part is that the reversed result of e1000 significantly higher than the normal one.
 As of the time of writing, I still have not found any satisfying explanation of this phenomenon.
 
+# D. `iperf` and `sysbench` Measurements During Migration
+
+## `sysbench` Part
+
+The experiment is done by running the following POSIX shell script in the guest during migration.
+
+```sh
+while true; do
+    TS=$(date +%H:%M:%S)
+    PERF=$(sysbench cpu run --time=1 | awk '/events \(avg\/stddev\)/ { printf $3 }');
+    echo $TS $PERF
+done
+```
+
+```
+22:55:05 1848.0000/0.00
+22:55:06 1839.0000/0.00
+22:55:07 1852.0000/0.00
+22:55:08 1847.0000/0.00
+22:55:09 1840.0000/0.00
+22:55:10 1844.0000/0.00
+22:55:11 1852.0000/0.00
+22:55:12 1848.0000/0.00
+22:55:13 1854.0000/0.00
+22:55:14 1852.0000/0.00
+22:55:15 1858.0000/0.00
+# migration starts
+22:55:16 1801.0000/0.00
+22:55:17 1858.0000/0.00
+22:55:18 1859.0000/0.00
+22:55:19 1856.0000/0.00
+22:55:20 1849.0000/0.00
+22:55:21 1845.0000/0.00
+22:55:22 1840.0000/0.00
+22:55:23 1830.0000/0.00
+22:55:24 1839.0000/0.00
+22:55:25 1842.0000/0.00
+```
