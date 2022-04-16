@@ -1,0 +1,52 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Sysbench CPU perf during migration",
+  "width": 300,
+  "height": 200,
+  "data": {
+    "values": [
+      {"time": 5, "events / sec": 1848.0000},
+      {"time": 6, "events / sec": 1839.0000},
+      {"time": 7, "events / sec": 1852.0000},
+      {"time": 8, "events / sec": 1847.0000},
+      {"time": 9, "events / sec": 1840.0000},
+      {"time": 10, "events / sec": 1844.0000},
+      {"time": 11, "events / sec": 1852.0000},
+      {"time": 12, "events / sec": 1848.0000},
+      {"time": 13, "events / sec": 1854.0000},
+      {"time": 14, "events / sec": 1852.0000},
+      {"time": 15, "events / sec": 1858.0000},
+      {"time": 16, "events / sec": 1801.0000},
+      {"time": 17, "events / sec": 1858.0000},
+      {"time": 18, "events / sec": 1859.0000},
+      {"time": 19, "events / sec": 1856.0000},
+      {"time": 20, "events / sec": 1849.0000},
+      {"time": 21, "events / sec": 1845.0000},
+      {"time": 22, "events / sec": 1840.0000},
+      {"time": 23, "events / sec": 1830.0000},
+      {"time": 24, "events / sec": 1839.0000},
+      {"time": 25, "events / sec": 1842.0000}
+    ]
+  },
+  "layer": [
+    {
+      "mark": "line",
+      "encoding": {
+        "x": {"field": "time", "type": "quantitative"},
+        "y": {"field": "events / sec", "type": "quantitative"}
+      }
+    },
+    {
+      "mark": {
+        "type": "rule",
+        "color": "lightgray",
+        "opacity": 0.7,
+        "size": 1,
+        "strokeDash": [ 5, 5 ]
+      },
+      "encoding": {
+        "x": {"datum": 15}
+      }
+    }
+  ]
+}

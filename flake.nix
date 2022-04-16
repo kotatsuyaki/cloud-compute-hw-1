@@ -11,6 +11,7 @@
         deps = with pkgs; [
           texlive.combined.scheme-full
           pandoc
+          librsvg
         ];
         dev-deps = with pkgs; [
           rnix-lsp
